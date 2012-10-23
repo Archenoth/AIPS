@@ -56,7 +56,7 @@ int fileArgument(char *argument, struct pStruct *params)
 			 "that again...\n");
       else
 	{
-	  params->romFile = fopen(argument, "rw");
+	  params->romFile = fopen(argument, "rb");
 	  if((params->flags & ARG_VERBOSE))
 	    printf("ROM File to use is: %s\n", argument);
 	  if(params->romFile == NULL)
@@ -115,8 +115,10 @@ int patchROM(struct pStruct *params)
   struct patchData patch = {};
   while(readRecord(&patch, params->ipsFile))
     {
-      //      printf("%zd", patch.data);
+      printf("HAHAHA%s\n\n\n\n\nNONONO\n", (char*)patch.data);
       free(patch.data);
+      //      printf("%zd", patch.data);
+      //free(patch.data);
       //      free(patch.data);
       //    fwrite(&patch.data, 1, sizeof(patch.data), stdout);
     }
@@ -130,12 +132,33 @@ int readRecord(struct patchData *patch, FILE *filePointer)
   if(fread(&patch->offset, 1, 3, filePointer) &&
      fread(&patch->size, 1, 2, filePointer))
     {
-      char *data = malloc(sizeof(char) * patch->size);
+      if(patch->size == 0)
+	return readRLE(patch, filePointer);
+      //     char *data[(int)(sizeof(char) / patch->size) + 1];
+  //      char *data = malloc(sizeof(char) * patch->size);
       //      patch->data = ()realloc(patch->data, patch->size + 1);
-      patch->data = &data;
-      return fread(data, 1, patch->size, filePointer);
-      
-      //return 1;
+      patch->data = (char*)malloc(patch->size + 1);
+      //      int i = 0;
+
+      //      printf("%d", (int)sizeof(patch->data));
+      //      while(patch->size > sizeof(patch->data))
+      return fread(patch->data, patch->size, 1, filePointer);
+      /* 	  return 0; */
+      /* return 1; */
+    }
+  return 0;
+}
+
+
+int readRLE(struct patchData *patch, FILE *filePointer)
+{
+  if(fread(&patch->size, 16, 1, filePointer))
+    {
+      printf("%d", patch->size);
+      /* int *byte = NULL, i; */
+      /* if(fread(byte, 8, 1, filePointer)) */
+      /* 	for(i = 0; i > patch->size; i++) */
+      /* 	  printf("%d", *byte); */
     }
   return 0;
 }

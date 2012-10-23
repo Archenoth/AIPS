@@ -45,6 +45,7 @@ $(OUT)64.exe: $(WIN64OBJ)
 
 clean:
 	-$(RM) $(OBJ)
+	-$(RM) $(OBJ32)
 	-$(RM) $(WINOBJ)
 	-$(RM) $(WIN64OBJ)
 
@@ -54,6 +55,7 @@ veryclean: clean
 	-$(RM) $(OUT).exe
 	-$(RM) $(OUT)64.exe
 	-$(RM) $(OBJ)
+	-$(RM) $(OBJ32)
 	-$(RM) $(WINOBJ)
 	-$(RM) $(WIN64OBJ)
 	-$(RM) *~

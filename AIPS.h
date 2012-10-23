@@ -12,6 +12,16 @@
 #define ERR_MEDIUM 1
 #define ERR_MAJOR 2
 
+// Conversion macros
+#define BYTE3_TO_UINT(bp) \
+  (((unsigned int)(bp)[0] << 16) & 0x00FF0000) | \
+  (((unsigned int)(bp)[1] << 8) & 0x0000FF00) |	 \
+  ((unsigned int)(bp)[2] & 0x000000FF)
+
+#define BYTE2_TO_UINT(bp)		    \
+  (((unsigned int)(bp)[0] << 8) & 0xFF00) | \
+  ((unsigned int) (bp)[1] & 0x00FF)
+
 // Parameter Struct
 struct pStruct
 {
@@ -24,7 +34,7 @@ struct patchData
 {
   int offset;
   int size;
-  void *data;
+  char *data;
 };
 
 // Function definitions
@@ -33,3 +43,4 @@ int fileArgument(char *argument, struct pStruct *params);
 int AIPSError(int level, const char *message, ...);
 int patchROM(struct pStruct *params);
 int readRecord(struct patchData *patch, FILE *filePointer);
+int readRLE(struct patchData *patch, FILE *filePointer);
