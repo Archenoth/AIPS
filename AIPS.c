@@ -29,7 +29,18 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-
+/*
+ * Command line argument parsing function.
+ *
+ * This function parses arguments passed to AIPS from the command line
+ * and sets verious flags according to their values.
+ * @param char *argument the argument string. (Taken directly from the
+ * command line)
+ * @param struct pStruct *params The parameter struct which holds
+ * filen streams as well as all of the flags set combined with bitwise
+ * math.
+ * @return 1 on success.
+ */
 int parseArg(char *argument, struct pStruct *params)
 {
 if(argument[0] == '-')
@@ -45,7 +56,18 @@ if(argument[0] == '-')
  return 1;
 }
 
-
+/*
+ * Filename parsing function
+ *
+ * This function parses filename arguments and attempts to open the
+ * files associated with them. It also has the first level of error
+ * handling for files.
+ * @param char *argument A pointer to an filename string to attempt to
+ * open.
+ * @param struct pStruct *params A pointer to a parameter struct
+ * containing files, and flags for execution.
+ * @return Returns 1 on success, or 0 on failure.
+ */
 int fileArgument(char *argument, struct pStruct *params)
 {
   if(params->ipsFile)
@@ -76,7 +98,22 @@ int fileArgument(char *argument, struct pStruct *params)
   return 1;
 }
 
-
+/*
+ * Error function.
+ *
+ * This function takes an error level and a string or two, then
+ * concatenates the strings, prints them to stderr, and takes the
+ * requested action according to the error level.
+ * @param int level The level of the error passed ERR_MINOR is more
+ * like a warning, and returns a 1, allowing operations to
+ * continue. ERR_MEDIUM is a standard error that will returna 0 status
+ * so correct handling can take place, and ERR_MAJOR halts the
+ * program.
+ * @param char *message A message that you wish to print to the
+ * screen, accepts printf-style escapes and variables.
+ * @param ... The remainder of the arguments that will be put into the
+ * string in lieu of printf.
+ */
 int AIPSError(int level, const char *message, ...)
 {
   va_list concat;
@@ -100,6 +137,16 @@ int AIPSError(int level, const char *message, ...)
     }
 }
 
+/*
+ * Patches a file
+ *
+ * This function will attempt to patch a file specified in it's
+ * parameters with the patch file also specified in it's parameters
+ * according to the flags set.
+ * @param struct pStruct *params A pointer to a parameter struct that
+ * contains the files and parameters in which to patch the file.
+ * @return Returns 1 on success or 0 on failure.
+ */
 int patchROM(struct pStruct *params)
 {
   char buffer[6];
@@ -115,15 +162,9 @@ int patchROM(struct pStruct *params)
   struct patchData patch = {};
   while(readRecord(&patch, params->ipsFile))
     {
-      printf("HAHAHA%s\n\n\n\n\nNONONO\n", (char*)patch.data);
+      printf("\n\n%s\n\\n", (char*)patch.data);
       free(patch.data);
-      //      printf("%zd", patch.data);
-      //free(patch.data);
-      //      free(patch.data);
-      //    fwrite(&patch.data, 1, sizeof(patch.data), stdout);
     }
-  //printf("%s \n", patch.data);
-  //fwrite(&buffer, sizeof(buffer), 1, stdout);
   return 0;
 }
 
@@ -134,22 +175,26 @@ int readRecord(struct patchData *patch, FILE *filePointer)
     {
       if(patch->size == 0)
 	return readRLE(patch, filePointer);
-      //     char *data[(int)(sizeof(char) / patch->size) + 1];
-  //      char *data = malloc(sizeof(char) * patch->size);
-      //      patch->data = ()realloc(patch->data, patch->size + 1);
-      patch->data = (char*)malloc(patch->size + 1);
-      //      int i = 0;
 
-      //      printf("%d", (int)sizeof(patch->data));
-      //      while(patch->size > sizeof(patch->data))
+      patch->data = (char*)malloc(patch->size + 1);
       return fread(patch->data, patch->size, 1, filePointer);
-      /* 	  return 0; */
-      /* return 1; */
     }
   return 0;
 }
 
-
+/*
+ * Read an RLE-Encoded patch...
+ * 
+ * RLE patches are simple patches with a single byte repeating a
+ * specified quantity of times. The first 16 bits are the size of the
+ * patch, or the number of times to repeat the insert, and the value
+ * immediately succeeding this number is the patch character itself...
+ * @param struct patchData *patch A patch struct pointer holding the
+ * offset, the size, and the data...
+ * @param FILE *filePointer a file pointer to the current location in
+ * the patch file.
+ * @return Returns 1 on success, 0 on failure.
+ */
 int readRLE(struct patchData *patch, FILE *filePointer)
 {
   if(fread(&patch->size, 16, 1, filePointer))
