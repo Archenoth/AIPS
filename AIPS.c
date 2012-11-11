@@ -173,6 +173,10 @@ int readRecord(struct patchData *patch, FILE *filePointer)
   if(fread(&patch->offset, 1, 3, filePointer) &&
      fread(&patch->size, 1, 2, filePointer))
     {
+      // Fix linear reads
+      patch->size = BYTE2_TO_UINT(&patch->size);
+      patch->offset = BYTE3_TO_UINT(&patch->offset);
+
       if(patch->size == 0)
 	return readRLE(patch, filePointer);
 
@@ -198,12 +202,6 @@ int readRecord(struct patchData *patch, FILE *filePointer)
 int readRLE(struct patchData *patch, FILE *filePointer)
 {
   if(fread(&patch->size, 16, 1, filePointer))
-    {
-      printf("%d", patch->size);
-      /* int *byte = NULL, i; */
-      /* if(fread(byte, 8, 1, filePointer)) */
-      /* 	for(i = 0; i > patch->size; i++) */
-      /* 	  printf("%d", *byte); */
-    }
+    return fread(patch->data, BYTE2_TO_UINT(&patch->size), 1, filePointer);
   return 0;
 }
