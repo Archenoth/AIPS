@@ -201,7 +201,17 @@ int readRecord(struct patchData *patch, FILE *filePointer)
  */
 int readRLE(struct patchData *patch, FILE *filePointer)
 {
-  if(fread(&patch->size, 16, 1, filePointer))
-    return fread(patch->data, BYTE2_TO_UINT(&patch->size), 1, filePointer);
+  if(fread(&patch->size, 2, 1, filePointer))
+    {
+      int count;
+      char data = '\0';
+      if(!fread(&data, 1, 1, filePointer))
+	return 0;
+
+      patch->data = (char*)malloc((patch->size + 1) * sizeof(char));
+      for(count = 0; count < (BYTE2_TO_UINT(&patch->size)); count++)
+	patch->data[sizeof(char) * count] = (char)data;
+      return 1;
+    }
   return 0;
 }
