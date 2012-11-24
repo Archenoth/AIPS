@@ -168,6 +168,16 @@ int patchROM(struct pStruct *params)
   return 0;
 }
 
+/*
+ * Reads a record from the patch file.
+ *
+ * This code both detects, and reads the next record in the
+ * filePointer at the given location and writes the results into the
+ * patchData struct supplied.
+ * @param struct *patchData A pointer to a patchData struct that the
+ * information will be written to.
+ * @param FILE *filePointer a pointer to the patch file being read.
+ */
 int readRecord(struct patchData *patch, FILE *filePointer)
 {
   if(fread(&patch->offset, 1, 3, filePointer) &&
@@ -208,7 +218,7 @@ int readRLE(struct patchData *patch, FILE *filePointer)
       if(!fread(&data, 1, 1, filePointer))
 	return 0;
 
-      patch->data = (char*)malloc((patch->size + 1) * sizeof(char));
+      patch->data = (char*)malloc((patch->size * sizeof(char)) + 1);
       for(count = 0; count < (BYTE2_TO_UINT(&patch->size)); count++)
 	patch->data[sizeof(char) * count] = (char)data;
       return 1;
