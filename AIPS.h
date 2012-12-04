@@ -32,8 +32,8 @@ struct pStruct
 
 struct patchData
 {
-  int offset;
-  int size;
+  unsigned int offset;
+  unsigned int size;
   char *data;
 };
 

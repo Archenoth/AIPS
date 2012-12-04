@@ -78,7 +78,7 @@ int fileArgument(char *argument, struct pStruct *params)
 			 "that again...\n");
       else
 	{
-	  params->romFile = fopen(argument, "rb");
+	  params->romFile = fopen(argument, "rb+");
 	  if((params->flags & ARG_VERBOSE))
 	    printf("ROM File to use is: %s\n", argument);
 	  if(params->romFile == NULL)
@@ -162,9 +162,14 @@ int patchROM(struct pStruct *params)
   struct patchData patch = {};
   while(readRecord(&patch, params->ipsFile))
     {
-      printf("\n\n%s\n\\n", (char*)patch.data);
+      printf("\nOffset: %d size: %d",
+	     (unsigned int)patch.offset,
+	     (unsigned int)patch.size);
+      fseek(params->romFile, patch.offset, SEEK_SET);
+      fwrite(patch.data, patch.size, 1, params->romFile);
       free(patch.data);
     }
+  fclose(params->romFile);
   return 0;
 }
 
@@ -184,6 +189,10 @@ int readRecord(struct patchData *patch, FILE *filePointer)
      fread(&patch->size, 1, 2, filePointer))
     {
       // Fix linear reads
+      printf("\nBC Offset: %d size: %d",
+	     (unsigned int)patch->offset,
+	     (unsigned int)patch->size);
+      
       patch->size = BYTE2_TO_UINT(&patch->size);
       patch->offset = BYTE3_TO_UINT(&patch->offset);
 
@@ -215,12 +224,15 @@ int readRLE(struct patchData *patch, FILE *filePointer)
     {
       int count;
       char data = '\0';
+
+      patch->size = BYTE2_TO_UINT(&patch->size);
+
       if(!fread(&data, 1, 1, filePointer))
 	return 0;
 
       patch->data = (char*)malloc((patch->size * sizeof(char)) + 1);
-      for(count = 0; count < (BYTE2_TO_UINT(&patch->size)); count++)
-	patch->data[sizeof(char) * count] = (char)data;
+      for(count = 0; count < patch->size; count++)
+	patch->data[count] = (char)data;
       return 1;
     }
   return 0;
