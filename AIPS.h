@@ -1,5 +1,5 @@
 // Version number
-#define VERSION "0.0.1"
+#define VERSION "0.1"
 
 // Argument definition
 #define ARG_VERSION (1 << 0)
@@ -12,7 +12,8 @@
 #define ERR_MEDIUM 1
 #define ERR_MAJOR 2
 
-// Conversion macros
+// Conversion macros courtesy of ZeroSoft on Zopha's domain
+// http://zerosoft.zophar.net/ips.php
 #define BYTE3_TO_UINT(bp) \
   (((unsigned int)(bp)[0] << 16) & 0x00FF0000) | \
   (((unsigned int)(bp)[1] << 8) & 0x0000FF00) |	 \
