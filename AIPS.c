@@ -185,16 +185,17 @@ int patchROM(struct pStruct *params)
  */
 int readRecord(struct patchData *patch, FILE *filePointer)
 {
-  if(fread(&patch->offset, 1, 3, filePointer) &&
-     fread(&patch->size, 1, 2, filePointer))
+  unsigned char offset[3], size[2];
+  if(fread(&offset, 1, 3, filePointer) &&
+     fread(&size, 1, 2, filePointer))
     {
       // Fix linear reads
       printf("\nBC Offset: %d size: %d",
 	     (unsigned int)patch->offset,
 	     (unsigned int)patch->size);
       
-      patch->size = BYTE2_TO_UINT(&patch->size);
-      patch->offset = BYTE3_TO_UINT(&patch->offset);
+      patch->size = BYTE2_TO_UINT(size);
+      patch->offset = BYTE3_TO_UINT(offset);
 
       if(patch->size == 0)
 	return readRLE(patch, filePointer);
@@ -220,12 +221,13 @@ int readRecord(struct patchData *patch, FILE *filePointer)
  */
 int readRLE(struct patchData *patch, FILE *filePointer)
 {
-  if(fread(&patch->size, 2, 1, filePointer))
+  char size[2];
+  if(fread(&size, 2, 1, filePointer))
     {
       int count;
       char data = '\0';
 
-      patch->size = BYTE2_TO_UINT(&patch->size);
+      patch->size = BYTE2_TO_UINT(size);
 
       if(!fread(&data, 1, 1, filePointer))
 	return 0;
