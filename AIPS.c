@@ -30,7 +30,8 @@ int main(int argc, char *argv[])
     printf("Archenoth IPS version %s\n", VERSION);
   else if(params.romFile == NULL ||
 	  params.ipsFile == NULL)
-    fprintf(stderr, "File to patch and patch file are both required.\n");
+    fprintf(stderr, "File to patch and patch file are both required.\n"
+	    "Try %s -h\n", argv[0]);
   else
     return patchROM(&params);
     
