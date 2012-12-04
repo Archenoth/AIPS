@@ -162,9 +162,11 @@ int patchROM(struct pStruct *params)
   struct patchData patch = {};
   while(readRecord(&patch, params->ipsFile))
     {
-      printf("\nOffset: %d size: %d",
-	     (unsigned int)patch.offset,
-	     (unsigned int)patch.size);
+      if((params->flags & ARG_VERBOSE))
+	printf("Applied patch. Offset: Byte %d size: %d bytes\n",
+	       (unsigned int)patch.offset,
+	       (unsigned int)patch.size);
+
       fseek(params->romFile, patch.offset, SEEK_SET);
       fwrite(patch.data, patch.size, 1, params->romFile);
       free(patch.data);
@@ -188,12 +190,8 @@ int readRecord(struct patchData *patch, FILE *filePointer)
   unsigned char offset[3], size[2];
   if(fread(&offset, 1, 3, filePointer) &&
      fread(&size, 1, 2, filePointer))
-    {
+    {      
       // Fix linear reads
-      printf("\nBC Offset: %d size: %d",
-	     (unsigned int)patch->offset,
-	     (unsigned int)patch->size);
-      
       patch->size = BYTE2_TO_UINT(size);
       patch->offset = BYTE3_TO_UINT(offset);
 
