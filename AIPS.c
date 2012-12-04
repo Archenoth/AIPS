@@ -21,7 +21,8 @@ int main(int argc, char *argv[])
   if(params.flags & ARG_HELP)
     return AIPSError(ERR_MINOR,
 		     "Archenoth IPS help.\n\n"
-		     "Invocation: %s <IPS FIle> <ROM File> <options>\n\n"
+		     "Invocation: %s <options> <IPS FIle> <ROM File>\n\n"
+		     "Options:\n"
 		     "-h, -help, -?, --help\tShows this help screen.\n"
 		     "-version\t\tPrints out version information.\n"
 		     "-v, -verbose\t\tShow verbose output.\n", argv[0]);
