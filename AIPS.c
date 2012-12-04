@@ -18,6 +18,14 @@ int main(int argc, char *argv[])
     if(!parseArg(argv[i], &params))
       return 1;
 
+  if(params.flags & ARG_HELP)
+    return AIPSError(ERR_MINOR,
+		     "Archenoth IPS help.\n\n"
+		     "Invocation: %s <IPS FIle> <ROM File> <options>\n\n"
+		     "-h, -help, -?, --help\tShows this help screen.\n"
+		     "-version\t\tPrints out version information.\n"
+		     "-v, -verbose\t\tShow verbose output.\n", argv[0]);
+
   if(params.flags & ARG_VERSION)
     printf("Archenoth IPS version %s\n", VERSION);
   else if(params.romFile == NULL ||
@@ -50,6 +58,11 @@ if(argument[0] == '-')
     if(strcmp(argument, "-verbose") == 0 ||
        strcmp(argument, "-v") == 0)
       params->flags = params->flags + ARG_VERBOSE;
+    if(strcmp(argument, "-help") == 0 ||
+       strcmp(argument, "-h") == 0 ||
+       strcmp(argument, "--help") == 0 ||
+       strcmp(argument, "-?") == 0)
+      params->flags = params->flags + ARG_HELP;
   }
  else
    return fileArgument(argument, params);
@@ -118,7 +131,9 @@ int AIPSError(int level, const char *message, ...)
 {
   va_list concat;
 
-  fprintf(stderr, "Error: ");
+  if(level > ERR_MINOR)
+    fprintf(stderr, "Error: ");
+
   va_start(concat, message);
   vfprintf(stderr, message, concat);
   va_end(concat);
