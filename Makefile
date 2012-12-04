@@ -26,7 +26,7 @@ all: $(OUT) $(OUT)32 $(OUT).exe $(OUT)64.exe
 	$(CC) $(CFLAGS) -m32 -o $@ -c $<
 
 %.owin:%.c
-	$(WIN)-$(CC) $(CFLAGS) $(WINCFLAGS) -o $@ -c $<
+	$(WIN)-$(CC) $(CFLAGS) $(WINCFLAGS) -m32 -o $@ -c $<
 
 %.owin64:%.c
 	$(WIN64)-$(CC) $(CFLAGS) $(WINCFLAGS) -o $@ -c $<
@@ -35,13 +35,13 @@ $(OUT): $(OBJ)
 	$(CC) $(OBJ) $(LDFLAGS) -o $@
 
 $(OUT)32: $(OBJ32)
-	$(CC) $(OBJ) $(LDFLAGS) -o $@
+	$(CC) $(OBJ32) $(LDFLAGS) -m32 -o $@
 
 $(OUT).exe: $(WINOBJ)
-	$(CC) $(OBJ) $(LDFLAGS) -o $@
+	$(WIN)-$(CC) $(WINOBJ) $(LDFLAGS) -m32 -o $@
 
 $(OUT)64.exe: $(WIN64OBJ)
-	$(CC) $(OBJ) $(LDFLAGS) -o $@
+	$(WIN64)-$(CC) $(WIN64OBJ) $(LDFLAGS) -o $@
 
 clean:
 	-$(RM) $(OBJ)
