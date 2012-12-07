@@ -17,6 +17,18 @@ RM=rm
 
 .PHONY: check-syntax clean veryclean help
 
+$(OUT): $(OBJ)
+	$(CC) $(OBJ) $(LDFLAGS) -o $@
+
+$(OUT)32: $(OBJ32)
+	$(CC) $(OBJ32) $(LDFLAGS) -m32 -o $@
+
+$(OUT).exe: $(WINOBJ)
+	$(WIN)-$(CC) $(WINOBJ) $(LDFLAGS) -m32 -o $@
+
+$(OUT)64.exe: $(WIN64OBJ)
+	$(WIN64)-$(CC) $(WIN64OBJ) $(LDFLAGS) -o $@
+
 all: $(OUT) $(OUT)32 $(OUT).exe $(OUT)64.exe
 
 %.o:%.c
@@ -30,18 +42,6 @@ all: $(OUT) $(OUT)32 $(OUT).exe $(OUT)64.exe
 
 %.owin64:%.c
 	$(WIN64)-$(CC) $(CFLAGS) $(WINCFLAGS) -o $@ -c $<
-
-$(OUT): $(OBJ)
-	$(CC) $(OBJ) $(LDFLAGS) -o $@
-
-$(OUT)32: $(OBJ32)
-	$(CC) $(OBJ32) $(LDFLAGS) -m32 -o $@
-
-$(OUT).exe: $(WINOBJ)
-	$(WIN)-$(CC) $(WINOBJ) $(LDFLAGS) -m32 -o $@
-
-$(OUT)64.exe: $(WIN64OBJ)
-	$(WIN64)-$(CC) $(WIN64OBJ) $(LDFLAGS) -o $@
 
 clean:
 	-$(RM) $(OBJ)
