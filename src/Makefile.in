@@ -62,7 +62,7 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_AIPS_OBJECTS = AIPS.$(OBJEXT) IPS.$(OBJEXT)
+am_AIPS_OBJECTS = AIPS.$(OBJEXT) IPS.$(OBJEXT) UPS.$(OBJEXT)
 AIPS_OBJECTS = $(am_AIPS_OBJECTS)
 AIPS_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -166,7 +166,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AIPS_SOURCES = AIPS.c IPS.c
+AIPS_SOURCES = AIPS.c IPS.c UPS.c
 all: all-am
 
 .SUFFIXES:
@@ -253,6 +253,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/AIPS.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/IPS.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UPS.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
