@@ -18,3 +18,12 @@ AIPS64
 *.gba
 *.ips
 *.IPS
+*BAK
+*bak
+Makefile
+autom4te.cache
+config.h
+config.log
+config.status
+.deps
+stamp-h1
