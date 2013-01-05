@@ -6,8 +6,10 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "AIPS.h"
 
+#include <config.h>
+
+#include "AIPS.h"
 
 int main(int argc, char *argv[])
 {
