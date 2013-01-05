@@ -67,6 +67,14 @@ int IPSReadRLE(struct patchData *patch, FILE *filePointer)
 }
 
 
+/*
+ * Checks that an IPS file has the correct header
+ *
+ * Checks that the next 5 bytes (In an IPS file, the first 5 bytes are
+ * where the header is present) say "PATCH".
+ * @param FILE *filePointer the pointer to the IPS patch file.
+ * @returns int 1 on a valid PATCH header, 0 otherwise.
+ */
 int IPSCheckPatch(FILE *filePointer)
 {
   char buffer[6];
