@@ -1,3 +1,13 @@
+#ifndef AIPS_HEAD
+#define AIPS_HEAD
+
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 // Argument definition
 #define ARG_VERSION (1 << 0)
 #define ARG_HELP (1 << 1)
@@ -28,17 +38,10 @@ struct pStruct
   FILE *ipsFile;
 };
 
-struct patchData
-{
-  unsigned int offset;
-  unsigned int size;
-  char *data;
-};
-
 // Function definitions
 int parseArg(char *argument, struct pStruct *params);
 int fileArgument(char *argument, struct pStruct *params);
 int AIPSError(int level, const char *message, ...);
 int patchROM(struct pStruct *params);
-int readRecord(struct patchData *patch, FILE *filePointer);
-int readRLE(struct patchData *patch, FILE *filePointer);
+
+#endif
