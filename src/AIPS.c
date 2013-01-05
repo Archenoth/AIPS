@@ -161,15 +161,8 @@ int AIPSError(int level, const char *message, ...)
  */
 int patchROM(struct pStruct *params)
 {
-  char buffer[6];
-  if(fread(buffer, 1, 5, params->ipsFile) == 0)
-    return 1;
-
-  buffer[5] = '\0';
-
-  // Valid patch header?
-  if(strcmp(buffer, "PATCH") != 0)
-    AIPSError(ERR_MAJOR, "Invalid patch file! %s", buffer);
+  if(IPSCheckPatch(params->ipsFile))
+    AIPSError(ERR_MAJOR, "Invalid patch file!");
 
   struct patchData patch = {};
   while(IPSReadRecord(&patch, params->ipsFile))
