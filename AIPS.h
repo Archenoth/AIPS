@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#define VERSION "0.0.1"
+
 // Argument definition
 #define ARG_VERSION (1 << 0)
 #define ARG_HELP (1 << 1)

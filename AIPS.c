@@ -1,6 +1,5 @@
 // Archenoth IPS AIPS (Pronounced "Apes")
 
-#include <config.h>
 #include "AIPS.h"
 #include "IPS.h"
 #include "UPS.h"
