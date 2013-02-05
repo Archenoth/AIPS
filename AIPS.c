@@ -51,15 +51,15 @@ int parseArg(char *argument, struct pStruct *params)
 if(argument[0] == '-')
   {
     if(strcmp(argument, "-version") == 0)
-      params->flags = params->flags + ARG_VERSION;
+      params->flags = params->flags | ARG_VERSION;
     if(strcmp(argument, "-verbose") == 0 ||
        strcmp(argument, "-v") == 0)
-      params->flags = params->flags + ARG_VERBOSE;
+      params->flags = params->flags | ARG_VERBOSE;
     if(strcmp(argument, "-help") == 0 ||
        strcmp(argument, "-h") == 0 ||
        strcmp(argument, "--help") == 0 ||
        strcmp(argument, "-?") == 0)
-      params->flags = params->flags + ARG_HELP;
+      params->flags = params->flags | ARG_HELP;
   }
  else
    return fileArgument(argument, params);
