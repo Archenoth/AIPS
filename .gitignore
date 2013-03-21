@@ -20,10 +20,4 @@ AIPS64
 *.IPS
 *BAK
 *bak
-Makefile
-autom4te.cache
-config.h
-config.log
-config.status
-.deps
-stamp-h1
+Roms

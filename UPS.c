@@ -15,10 +15,21 @@ int UPSCheckPatch(FILE *filePointer)
 {
   char buffer[5];
   if(fread(buffer, 1, 4, filePointer) == 0)
-    return 1;
+    return 0;
 
   buffer[4] = '\0';
 
   // Valid patch header?
-  return strcmp(buffer, "UPS1") != 0;
+  if(strcmp(buffer, "UPS1") == 0)
+    {
+      printf("This appears to be a valid UPS patch...\n");
+      return 1;
+    }
+  return 0;
+}
+
+
+int UPSReadRecord(FILE *filePointer)
+{
+  return 1;
 }

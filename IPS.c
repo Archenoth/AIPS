@@ -79,10 +79,15 @@ int IPSCheckPatch(FILE *filePointer)
 {
   char buffer[6];
   if(fread(buffer, 1, 5, filePointer) == 0)
-    return 1;
+    return 0;
 
   buffer[5] = '\0';
 
   // Valid patch header?
-  return strcmp(buffer, "PATCH") != 0;
+  if(strcmp(buffer, "PATCH") == 0)
+    {
+      printf("This appears to be a valid IPS patch file...\n");
+      return 1;
+    }
+  return 0;
 }

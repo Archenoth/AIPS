@@ -48,22 +48,22 @@ int main(int argc, char *argv[])
  */
 int parseArg(char *argument, struct pStruct *params)
 {
-if(argument[0] == '-')
-  {
-    if(strcmp(argument, "-version") == 0)
-      params->flags = params->flags | ARG_VERSION;
-    if(strcmp(argument, "-verbose") == 0 ||
-       strcmp(argument, "-v") == 0)
-      params->flags = params->flags | ARG_VERBOSE;
-    if(strcmp(argument, "-help") == 0 ||
-       strcmp(argument, "-h") == 0 ||
-       strcmp(argument, "--help") == 0 ||
-       strcmp(argument, "-?") == 0)
-      params->flags = params->flags | ARG_HELP;
-  }
- else
-   return fileArgument(argument, params);
- return 1;
+  if(argument[0] == '-')
+    {
+      if(strcmp(argument, "-version") == 0)
+	params->flags = params->flags | ARG_VERSION;
+      if(strcmp(argument, "-verbose") == 0 ||
+	 strcmp(argument, "-v") == 0)
+	params->flags = params->flags | ARG_VERBOSE;
+      if(strcmp(argument, "-help") == 0 ||
+	 strcmp(argument, "-h") == 0 ||
+	 strcmp(argument, "--help") == 0 ||
+	 strcmp(argument, "-?") == 0)
+	params->flags = params->flags | ARG_HELP;
+    }
+  else
+    return fileArgument(argument, params);
+  return 1;
 }
 
 /*
@@ -80,33 +80,99 @@ if(argument[0] == '-')
  */
 int fileArgument(char *argument, struct pStruct *params)
 {
-  if(params->ipsFile)
-    {
-      if(params->romFile)
-	return AIPSError(ERR_MEDIUM,
-			 "What? THREE files? You may want to try "
-			 "that again...\n");
-      else
-	{
-	  params->romFile = fopen(argument, "rb+");
-	  if((params->flags & ARG_VERBOSE))
-	    printf("ROM File to use is: %s\n", argument);
-	  if(params->romFile == NULL)
-	    return AIPSError(ERR_MEDIUM,
-			     "Cannot open ROM file: %s", argument);
-	}
-    }
+  if(isPatch(argument, (params->flags & ARG_VERBOSE)))
+    if(params->ipsFile == NULL)
+      return useFile(argument, params, params->ipsFile, "r");
+    else
+      return AIPSError(ERR_MEDIUM, "You totally just gave me two patch files.");
   else
+    if(params->romFile == NULL)
+      return useFile(argument, params, params->romFile, "rb+");
+    else
+      return AIPSError(ERR_MEDIUM, "Hunh? Dual ROM files?");
+}
+
+/*
+ * Determines if the file passed in is a patch or not.
+ *
+ * This function will take a char[] string filename, and first
+ * determine if it is a patch file based upon it's file extention and
+ * its header. If either of these fail, then the function will attempt
+ * to go through all of the checksum-checking functions it knows to
+ * determine if the file is a patch or not. It will print its findings
+ * out to the console if the second argument it gets equates to "1",
+ * or a boolean true.
+ * @param char* argument The filename passed into the function.
+ * @param int verbose Will determine if the function prints out
+ * information to the console about its findings. It will print them
+ * if true, or else it will be silent.
+ * @return int Returns a 1 if the passed in argument is a path to a
+ * valid patch file, 0 otherwise.
+ */
+int isPatch(char *argument, int verbose)
+{
+  if(verbose)
+    printf("%s seems to be... ", argument);
+
+  // Least amount of work... Just check the filename.
+  if(strlen(argument) > 4)
     {
-      params->ipsFile = fopen(argument, "r");
-      if((params->flags & ARG_VERBOSE))
-	printf("IPS file is: %s\n", argument);
-      if(params->ipsFile == NULL)
-	    return AIPSError(ERR_MEDIUM,
-			     "Cannot open IPS file: %s", argument);
+      char *extension = argument + (strlen(argument) - 4);
+
+      if((strcasecmp(extension, ".ips") == 0 &&
+	      IPSCheckPatch(fopen(argument, "r"))) ||
+	(strcasecmp(extension, ".ups") == 0 &&
+	 UPSCheckPatch(fopen(argument, "r"))))
+	return 1;
     }
+
+  //Hoomy. Guess we gotta check the headers of the files themselves.
+  FILE *test = fopen(argument, "r");
+  int (*function[])(FILE *argFile) = {IPSCheckPatch, UPSCheckPatch};
+
+  int i;
+  for(i = 0; i < (sizeof(function)/sizeof(function[0])); i++)
+    if(function[i](test))
+      {
+	fclose(test);
+	return 1;
+      }
+
+  printf("This looks like the ROM file to patch..?\n");
+  fclose(test);
+  return 0;
+}
+
+
+/*
+ * Opens a file with a debug and error handling wrapper.
+ *
+ * This function is a very loose abstraction of the fopen function
+ * that will accept a path to a file, and a pStruct that contains the
+ * argument flags that you had set before calling this function, a
+ * file pointer that you wish to store the stream, and finally the
+ * mode that you wish to use to open the file with.
+ * @param char *argument A string of the path to the file you are
+ * looking to open.
+ * @param struct pStruct *params A struct containing a valid flags
+ * variable to determine the options for opening the file and function
+ * operation.
+ * @param FILE *argFile a file pointer that you wish to open the file
+ * stream to.
+ * @param char *mode A string denoting the mode that you wish to open
+ * the file with.
+ * @return Returns a 1 on true, 0 if false.
+ */
+int useFile(char *argument, struct pStruct *params, FILE *argFile, char *mode)
+{
+  argFile = fopen(argument, mode);
+  if((params->flags & ARG_VERBOSE))
+    printf("Using file: %s\n", argument);
+  if(argFile == NULL)
+    return AIPSError(ERR_MEDIUM, "Cannot open file: %s", argument);
   return 1;
 }
+
 
 /*
  * Error function.
