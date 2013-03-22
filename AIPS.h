@@ -37,7 +37,7 @@ struct pStruct
 {
   int flags;
   FILE *romFile;
-  FILE *ipsFile;
+  FILE *patchFile;
 };
 
 // Function definitions

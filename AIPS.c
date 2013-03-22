@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[])
 {
-  struct pStruct params = {.romFile = NULL, .ipsFile = NULL};
+  struct pStruct params = {.romFile = NULL, .patchFile = NULL};
 
   int i;
   for(i = 1; i < argc; i++)
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
   if(params.flags & ARG_VERSION)
     printf("Archenoth IPS version %s\n", VERSION);
   else if(params.romFile == NULL ||
-	  params.ipsFile == NULL)
+	  params.patchFile == NULL)
     fprintf(stderr, "File to patch and patch file are both required.\n"
 	    "Try %s -h\n", argv[0]);
   else
@@ -81,8 +81,8 @@ int parseArg(char *argument, struct pStruct *params)
 int fileArgument(char *argument, struct pStruct *params)
 {
   if(isPatch(argument, (params->flags & ARG_VERBOSE)))
-    if(params->ipsFile == NULL)
-      return useFile(argument, params, params->ipsFile, "r");
+    if(params->patchFile == NULL)
+      return useFile(argument, params, params->patchFile, "r");
     else
       return AIPSError(ERR_MEDIUM, "You totally just gave me two patch files.");
   else
@@ -227,11 +227,11 @@ int AIPSError(int level, const char *message, ...)
  */
 int patchROM(struct pStruct *params)
 {
-  if(IPSCheckPatch(params->ipsFile))
+  if(IPSCheckPatch(params->patchFile))
     AIPSError(ERR_MAJOR, "Invalid patch file!");
 
   struct patchData patch = {};
-  while(IPSReadRecord(&patch, params->ipsFile))
+  while(IPSReadRecord(&patch, params->patchFile))
     {
       if((params->flags & ARG_VERBOSE))
 	printf("Applied patch. Offset: Byte %d size: %d bytes\n",
