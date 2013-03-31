@@ -11,7 +11,7 @@
  * @param FILE *filePointer the pointer to the UPS patch file.
  * @returns int 1 on a valid UPS1 header, 0 otherwise.
  */
-int UPSCheckPatch(FILE *filePointer)
+int UPSCheckPatch(FILE *filePointer, int verbose)
 {
   char buffer[5];
   if(fread(buffer, 1, 4, filePointer) == 0)
@@ -22,7 +22,8 @@ int UPSCheckPatch(FILE *filePointer)
   // Valid patch header?
   if(strcmp(buffer, "UPS1") == 0)
     {
-      printf("This appears to be a valid UPS patch...\n");
+      if(verbose)
+	printf("This appears to be a valid UPS patch...\n");
       return 1;
     }
   return 0;

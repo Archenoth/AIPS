@@ -14,7 +14,8 @@
 #define ARG_VERSION (1 << 0)
 #define ARG_HELP (1 << 1)
 #define ARG_VERBOSE (1 << 2)
-#define ARG_OVERWRITE (1 << 3)
+#define ARG_VERYVERBOSE (1 << 3)
+#define ARG_OVERWRITE (1 << 4)
 
 // Error level definition
 #define ERR_MINOR 0

@@ -20,7 +20,8 @@ int main(int argc, char *argv[])
 		     "Options:\n"
 		     "-h, -help, -?, --help\tShows this help screen.\n"
 		     "-version\t\tPrints out version information.\n"
-		     "-v, -verbose\t\tShow verbose output.\n", argv[0]);
+		     "-v, -verbose\t\tShow verbose output. (Can be used twice.)"
+		     "\n", argv[0]);
 
   if(params.flags & ARG_VERSION)
     printf("Archenoth IPS version %s\n", VERSION);
@@ -54,7 +55,12 @@ int parseArg(char *argument, struct pStruct *params)
 	params->flags = params->flags | ARG_VERSION;
       if(strcmp(argument, "-verbose") == 0 ||
 	 strcmp(argument, "-v") == 0)
-	params->flags = params->flags | ARG_VERBOSE;
+	{
+	  if(params->flags & ARG_VERBOSE)
+	    params->flags = params->flags | ARG_VERYVERBOSE;
+	  else
+	    params->flags = params->flags | ARG_VERBOSE;
+	}
       if(strcmp(argument, "-help") == 0 ||
 	 strcmp(argument, "-h") == 0 ||
 	 strcmp(argument, "--help") == 0 ||
@@ -124,21 +130,24 @@ FILE* openIfPatch(char *filename, struct pStruct *params)
 
       // Quick IPS check
       if(strcasecmp(extension, ".ips") == 0)
-	  if(IPSCheckPatch(file))
-	    return file;
+	if(IPSCheckPatch(file, (params->flags & ARG_VERBOSE)))
+	  return file;
 
       // Quick UPS check
       if(strcasecmp(extension, ".ups") == 0)
-	if(UPSCheckPatch(file))
+	if(UPSCheckPatch(file, (params->flags & ARG_VERBOSE)))
 	  return file;
     }
 
   // Hoomy. Guess we gotta check the headers of the files themselves.
-  int (*function[])(FILE *argFile) = {IPSCheckPatch, UPSCheckPatch};
+  int (*function[])(FILE *argFile, int verbose) = {
+    IPSCheckPatch,
+    UPSCheckPatch
+  };
   
   int i;
   for(i = 0; i < (int)(sizeof(function)/sizeof(function[0])); i++)
-    if(function[i](file))
+    if(function[i](file, (params->flags & ARG_VERBOSE)))
       return file;
     else
       rewind(file); // So that the next check will happen from the beginning.
@@ -240,7 +249,7 @@ int patchROM(struct pStruct *params)
   struct patchData patch = {};
   while(IPSReadRecord(&patch, params->patchFile))
     {
-      if((params->flags & ARG_VERBOSE))
+      if((params->flags & ARG_VERYVERBOSE))
 	printf("Applied patch. Offset: Byte %d size: %d bytes\n",
 	       (unsigned int)patch.offset,
 	       (unsigned int)patch.size);

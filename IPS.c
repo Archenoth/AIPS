@@ -75,7 +75,7 @@ int IPSReadRLE(struct patchData *patch, FILE *filePointer)
  * @param FILE *filePointer the pointer to the IPS patch file.
  * @returns int 1 on a valid PATCH header, 0 otherwise.
  */
-int IPSCheckPatch(FILE *filePointer)
+int IPSCheckPatch(FILE *filePointer, int verbose)
 {
   char buffer[6];
   if(fread(buffer, 1, 5, filePointer) == 0)
@@ -86,7 +86,8 @@ int IPSCheckPatch(FILE *filePointer)
   // Valid patch header?
   if(strcmp(buffer, "PATCH") == 0)
     {
-      printf("This appears to be a valid IPS patch file...\n");
+      if(verbose)
+	printf("This appears to be a valid IPS patch file...\n");
       return 1;
     }
   return 0;
