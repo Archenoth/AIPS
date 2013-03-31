@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
   else
     return patchROM(&params);
     
-  return 0;
+  return 1;
 }
 
 /*
