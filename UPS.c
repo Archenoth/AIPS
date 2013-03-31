@@ -32,5 +32,5 @@ int UPSCheckPatch(FILE *filePointer, int verbose)
 
 int UPSReadRecord(FILE *filePointer)
 {
-  return 1;
+  return 0;
 }
