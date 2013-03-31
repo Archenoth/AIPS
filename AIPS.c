@@ -80,14 +80,15 @@ int parseArg(char *argument, struct pStruct *params)
  */
 int fileArgument(char *argument, struct pStruct *params)
 {
-  if(isPatch(argument, (params->flags & ARG_VERBOSE)))
+  FILE *file;
+  if((file = openIfPatch(argument, params)))
     if(params->patchFile == NULL)
-      return useFile(argument, params, params->patchFile, "r");
+      return !!(params->patchFile = file);
     else
       return AIPSError(ERR_MEDIUM, "You totally just gave me two patch files.");
   else
     if(params->romFile == NULL)
-      return useFile(argument, params, params->romFile, "rb+");
+      return !!(params->romFile = useFile(argument, params, "rb+"));
     else
       return AIPSError(ERR_MEDIUM, "Hunh? Dual ROM files?");
 }
@@ -109,38 +110,44 @@ int fileArgument(char *argument, struct pStruct *params)
  * @return int Returns a 1 if the passed in argument is a path to a
  * valid patch file, 0 otherwise.
  */
-int isPatch(char *argument, int verbose)
+FILE* openIfPatch(char *filename, struct pStruct *params)
 {
-  if(verbose)
-    printf("%s seems to be... ", argument);
+  FILE *file;
+  if(!(file = useFile(filename, params, "r")))
+     return (FILE*)NULL;
 
-  // Least amount of work... Just check the filename.
-  if(strlen(argument) > 4)
+  // Least amount of work... Just check the filename to determine type
+  // of check.
+  if(strlen(filename) > 4)
     {
-      char *extension = argument + (strlen(argument) - 4);
+      char *extension = filename + (strlen(filename) - 4);
 
-      if((strcasecmp(extension, ".ips") == 0 &&
-	      IPSCheckPatch(fopen(argument, "r"))) ||
-	(strcasecmp(extension, ".ups") == 0 &&
-	 UPSCheckPatch(fopen(argument, "r"))))
-	return 1;
+      // Quick IPS check
+      if(strcasecmp(extension, ".ips") == 0)
+	  if(IPSCheckPatch(file))
+	    return file;
+
+      // Quick UPS check
+      if(strcasecmp(extension, ".ups") == 0)
+	if(UPSCheckPatch(file))
+	  return file;
     }
 
-  //Hoomy. Guess we gotta check the headers of the files themselves.
-  FILE *test = fopen(argument, "r");
+  // Hoomy. Guess we gotta check the headers of the files themselves.
   int (*function[])(FILE *argFile) = {IPSCheckPatch, UPSCheckPatch};
-
+  
   int i;
-  for(i = 0; i < (sizeof(function)/sizeof(function[0])); i++)
-    if(function[i](test))
-      {
-	fclose(test);
-	return 1;
-      }
-
-  printf("This looks like the ROM file to patch..?\n");
-  fclose(test);
-  return 0;
+  for(i = 0; i < (int)(sizeof(function)/sizeof(function[0])); i++)
+    if(function[i](file))
+      return file;
+    else
+      rewind(file); // So that the next check will happen from the beginning.
+ 
+  // This file is obviously not a valid patch at this point in time...
+  fclose(file);
+  if(params->flags & ARG_VERBOSE)
+    printf("This looks like the ROM file to patch..?\n");
+  return NULL;
 }
 
 
@@ -163,14 +170,17 @@ int isPatch(char *argument, int verbose)
  * the file with.
  * @return Returns a 1 on true, 0 if false.
  */
-int useFile(char *argument, struct pStruct *params, FILE *argFile, char *mode)
+FILE *useFile(char *argument, struct pStruct *params, char *mode)
 {
-  argFile = fopen(argument, mode);
+  FILE *argFile = fopen(argument, mode);
   if((params->flags & ARG_VERBOSE))
     printf("Using file: %s\n", argument);
   if(argFile == NULL)
-    return AIPSError(ERR_MEDIUM, "Cannot open file: %s", argument);
-  return 1;
+    {
+      AIPSError(ERR_MEDIUM, "Cannot open file: %s", argument);
+      return NULL;
+    }
+  return argFile;
 }
 
 
@@ -227,9 +237,6 @@ int AIPSError(int level, const char *message, ...)
  */
 int patchROM(struct pStruct *params)
 {
-  if(IPSCheckPatch(params->patchFile))
-    AIPSError(ERR_MAJOR, "Invalid patch file!");
-
   struct patchData patch = {};
   while(IPSReadRecord(&patch, params->patchFile))
     {

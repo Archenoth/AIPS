@@ -45,6 +45,6 @@ int parseArg(char *argument, struct pStruct *params);
 int fileArgument(char *argument, struct pStruct *params);
 int AIPSError(int level, const char *message, ...);
 int patchROM(struct pStruct *params);
-int useFile(char *argument, struct pStruct *params, FILE *argFile, char *mode);
-int isPatch(char *argument, int verbose);
+FILE* useFile(char *argument, struct pStruct *params, char *mode);
+FILE* openIfPatch(char *filename, struct pStruct *params);
 #endif
