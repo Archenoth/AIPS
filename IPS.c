@@ -94,7 +94,7 @@ int IPSCheckPatch(FILE *filePointer, int verbose)
 }
 
 /*
- * Patches a file
+ * Patches a file using an IPS file
  *
  * This function will attempt to patch a file specified in it's
  * parameters with the patch file also specified in it's parameters
@@ -118,5 +118,37 @@ int IPSPatchFile(struct pStruct *params)
       free(patch.data);
     }
   fclose(params->romFile);
+  return 0;
+}
+
+/*
+ * Creates a patch file with the passed in pStruct
+ *
+ * This function creates an IPS patch file
+ */
+int IPSCreatePatch(struct pStruct *params)
+{
+  rewind(params->patchFile);
+  fwrite("PATCH", 1, sizeof("PATCH"), params->patchFile);
+  
+  fwrite("EOF", 1, sizeof("EOF"), params->patchFile);
+  return 0;
+}
+
+
+int IPSWriteRecord(struct patchData *patch, FILE *filePointer)
+{
+  fwrite(&patch->offset, 3, 1, filePointer);
+  fwrite(&patch->size, 2, 1, filePointer);
+  fwrite(&patch->data, sizeof(patch->data), 1, filePointer);
+  return 0;
+}
+
+
+int IPSWriteRLE(struct patchData *patch, FILE *filePointer)
+{
+  fwrite(&patch->offset, 2, 1, filePointer); //Offset should be 0
+  fwrite(&patch->size, 2, 1, filePointer);
+  fwrite(&patch->data, 1, 1, filePointer);
   return 0;
 }

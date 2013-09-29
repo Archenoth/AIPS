@@ -88,7 +88,10 @@ int fileArgument(char *argument, struct pStruct *params)
   FILE *file;
   if((file = openIfPatch(argument, params)))
     if(params->patchFile == NULL)
-      return !!(params->patchFile = file);
+      {
+        //TODO check size of file, if 0 set as create patch file
+        return !!(params->patchFile = file);
+      }
     else
       return AIPSError(ERR_MEDIUM, "You totally just gave me two patch files.");
   else
@@ -107,7 +110,9 @@ int fileArgument(char *argument, struct pStruct *params)
  * to go through all of the checksum-checking functions it knows to
  * determine if the file is a patch or not. It will print its findings
  * out to the console if the second argument it gets equates to "1",
- * or a boolean true.
+ * or a boolean true. If the file passed in doesn't exist, it is
+ * created and returned as a pointer to the writable FILE for use with
+ * fwrite and other writing stream functions.
  * @param char* argument The filename passed into the function.
  * @param int verbose Will determine if the function prints out
  * information to the console about its findings. It will print them
@@ -119,7 +124,7 @@ FILE* openIfPatch(char *filename, struct pStruct *params)
 {
   FILE *file;
   if(!(file = useFile(filename, params, "r")))
-     return (FILE*)NULL;
+     return useFile(filename, params, "w+");
 
   // Least amount of work... Just check the filename to determine type
   // of check.
@@ -194,13 +199,12 @@ FILE* openIfPatch(char *filename, struct pStruct *params)
 FILE *useFile(char *argument, struct pStruct *params, char *mode)
 {
   FILE *argFile = fopen(argument, mode);
-  if((params->flags & ARG_VERBOSE))
-    printf("Using file: %s\n", argument);
-  if(argFile == NULL)
-    {
-      AIPSError(ERR_MEDIUM, "Cannot open file: %s", argument);
-      return NULL;
-    }
+  if((params->flags & ARG_VERBOSE)){
+    if(argFile == NULL)
+      printf("Creating patch file: %s\n", argument);
+    else
+      printf("Using file: %s\n", argument);
+  }
   return argFile;
 }
 
