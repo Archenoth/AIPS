@@ -18,6 +18,12 @@ AIPS64
 *.gba
 *.ips
 *.IPS
+*.ups
+*.UPS
 *BAK
 *bak
+*.pdf
+*.PDF
 Roms
+TAGS
+*.S

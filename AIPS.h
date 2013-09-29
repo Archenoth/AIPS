@@ -34,8 +34,10 @@
   ((unsigned int) (bp)[1] & 0x00FF)
 
 // Parameter Struct
+typedef struct pStruct pStruct;
 struct pStruct
 {
+  int (*patchFunction)(struct pStruct *params);
   int flags;
   FILE *romFile;
   FILE *patchFile;

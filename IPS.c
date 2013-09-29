@@ -92,3 +92,31 @@ int IPSCheckPatch(FILE *filePointer, int verbose)
     }
   return 0;
 }
+
+/*
+ * Patches a file
+ *
+ * This function will attempt to patch a file specified in it's
+ * parameters with the patch file also specified in it's parameters
+ * according to the flags set.
+ * @param struct pStruct *params A pointer to a parameter struct that
+ * contains the files and parameters in which to patch the file.
+ * @return Returns 1 on success or 0 on failure.
+ */
+int IPSPatchFile(struct pStruct *params)
+{
+  struct patchData patch = {};
+  while(IPSReadRecord(&patch, params->patchFile))
+    {
+      if((params->flags & ARG_VERYVERBOSE))
+	printf("Applied patch. Offset: Byte %d size: %d bytes\n",
+	       (unsigned int)patch.offset,
+	       (unsigned int)patch.size);
+
+      fseek(params->romFile, patch.offset, SEEK_SET);
+      fwrite(patch.data, patch.size, 1, params->romFile);
+      free(patch.data);
+    }
+  fclose(params->romFile);
+  return 0;
+}
