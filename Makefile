@@ -5,8 +5,8 @@ WINOBJ=$(SRC:.c=.owin)
 WIN64OBJ=$(SRC:.c=.owin64)
 OUT=AIPS
 
-WIN=i586-mingw32msvc
-WIN64=i686-w64-mingw32
+WIN=i586-mingw32msvc-gcc
+WIN64=i686-w64-mingw32-gcc
 
 CFLAGS=-Wall -O3 -g
 LDFLAGS=
@@ -22,10 +22,10 @@ $(OUT)32: $(OBJ32)
 	$(CC) $(OBJ32) $(LDFLAGS) -m32 -o $@
 
 $(OUT).exe: $(WINOBJ)
-	$(WIN)-g$(CC) $(WINOBJ) $(LDFLAGS) -m32 -o $@
+	$(WIN) $(WINOBJ) $(LDFLAGS) -m32 -o $@
 
 $(OUT)64.exe: $(WIN64OBJ)
-	$(WIN64)-g$(CC) $(WIN64OBJ) $(LDFLAGS) -o $@
+	$(WIN64) $(WIN64OBJ) $(LDFLAGS) -o $@
 
 all: $(OUT) $(OUT)32 $(OUT).exe $(OUT)64.exe
 
@@ -36,10 +36,10 @@ all: $(OUT) $(OUT)32 $(OUT).exe $(OUT)64.exe
 	$(CC) $(CFLAGS) -m32 -o $@ -c $<
 
 %.owin:%.c
-	$(WIN)-g$(CC) $(CFLAGS) $(WINCFLAGS) -m32 -o $@ -c $<
+	$(WIN) $(CFLAGS) $(WINCFLAGS) -m32 -o $@ -c $<
 
 %.owin64:%.c
-	$(WIN64)-g$(CC) $(CFLAGS) $(WINCFLAGS) -o $@ -c $<
+	$(WIN64) $(CFLAGS) $(WINCFLAGS) -o $@ -c $<
 
 debug:
 	$(MAKE) CFLAGS=-DAIPS_TEST
@@ -52,16 +52,12 @@ clean:
 	-$(RM) $(OBJ32)
 	-$(RM) $(WINOBJ)
 	-$(RM) $(WIN64OBJ)
-
-veryclean: clean
 	-$(RM) $(OUT)
 	-$(RM) $(OUT)32
 	-$(RM) $(OUT).exe
 	-$(RM) $(OUT)64.exe
-	-$(RM) $(OBJ)
-	-$(RM) $(OBJ32)
-	-$(RM) $(WINOBJ)
-	-$(RM) $(WIN64OBJ)
+
+veryclean: clean
 	-$(RM) *~
 	-$(RM) *#
 
