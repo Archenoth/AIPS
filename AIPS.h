@@ -29,7 +29,7 @@
   (((unsigned int)(bp)[1] << 8) & 0x0000FF00) |	 \
   ((unsigned int)(bp)[2] & 0x000000FF)
 
-#define BYTE2_TO_UINT(bp)		    \
+#define BYTE2_TO_UINT(bp) \
   (((unsigned int)(bp)[0] << 8) & 0xFF00) | \
   ((unsigned int) (bp)[1] & 0x00FF)
 
@@ -50,4 +50,13 @@ int AIPSError(int level, const char *message, ...);
 int patchROM(struct pStruct *params);
 FILE* useFile(char *argument, struct pStruct *params, char *mode);
 FILE* openIfPatch(char *filename, struct pStruct *params);
+#endif
+
+// Testing macro if CFLAGS=-DAIPS_TEST
+#ifdef AIPS_TEST
+#define ASSERT(cond, message) \
+  if(!cond) printf("Assertion failed at %s:%d in function %s: %s\n", \
+                   __FILE__, __LINE__, __FUNCTION__, message);
+#else
+#define ASSERT(cond, message)
 #endif

@@ -15,7 +15,7 @@ WINCFLAGS=
 WINLDFLAGS=
 RM=rm
 
-.PHONY: check-syntax clean veryclean help
+.PHONY: check-syntax clean veryclean help debug
 
 $(OUT): $(OBJ)
 	$(CC) $(OBJ) $(LDFLAGS) -o $@
@@ -42,6 +42,12 @@ all: $(OUT) $(OUT)32 $(OUT).exe $(OUT)64.exe
 
 %.owin64:%.c
 	$(WIN64)-$(CC) $(CFLAGS) $(WINCFLAGS) -o $@ -c $<
+
+debug:
+	$(MAKE) CFLAGS=-DAIPS_TEST
+
+debug-all:
+	$(MAKE) all CFLAGS=-DAIPS_TEST
 
 clean:
 	-$(RM) $(OBJ)
