@@ -5,15 +5,13 @@ WINOBJ=$(SRC:.c=.owin)
 WIN64OBJ=$(SRC:.c=.owin64)
 OUT=AIPS
 
-CC=gcc
 WIN=i586-mingw32msvc
 WIN64=i686-w64-mingw32
 
 CFLAGS=-Wall -O3 -g
 LDFLAGS=
-WINCFLAGS=
-WINLDFLAGS=
-RM=rm
+WINCFLAGS=$(CFLAGS)
+WINLDFLAGS=$(LDFLAGS)
 
 .PHONY: check-syntax clean veryclean help debug
 
@@ -24,10 +22,10 @@ $(OUT)32: $(OBJ32)
 	$(CC) $(OBJ32) $(LDFLAGS) -m32 -o $@
 
 $(OUT).exe: $(WINOBJ)
-	$(WIN)-$(CC) $(WINOBJ) $(LDFLAGS) -m32 -o $@
+	$(WIN)-g$(CC) $(WINOBJ) $(LDFLAGS) -m32 -o $@
 
 $(OUT)64.exe: $(WIN64OBJ)
-	$(WIN64)-$(CC) $(WIN64OBJ) $(LDFLAGS) -o $@
+	$(WIN64)-g$(CC) $(WIN64OBJ) $(LDFLAGS) -o $@
 
 all: $(OUT) $(OUT)32 $(OUT).exe $(OUT)64.exe
 
@@ -38,10 +36,10 @@ all: $(OUT) $(OUT)32 $(OUT).exe $(OUT)64.exe
 	$(CC) $(CFLAGS) -m32 -o $@ -c $<
 
 %.owin:%.c
-	$(WIN)-$(CC) $(CFLAGS) $(WINCFLAGS) -m32 -o $@ -c $<
+	$(WIN)-g$(CC) $(CFLAGS) $(WINCFLAGS) -m32 -o $@ -c $<
 
 %.owin64:%.c
-	$(WIN64)-$(CC) $(CFLAGS) $(WINCFLAGS) -o $@ -c $<
+	$(WIN64)-g$(CC) $(CFLAGS) $(WINCFLAGS) -o $@ -c $<
 
 debug:
 	$(MAKE) CFLAGS=-DAIPS_TEST
