@@ -21,7 +21,7 @@ int UPSCheckPatch(FILE *filePointer, int verbose)
     return 0;
 
   char buffer[5];
-  if(fread(buffer, BIT, 4, filePointer) == 0)
+  if(fread(buffer, BYTE, 4, filePointer) == 0)
     return 0;
 
   buffer[4] = '\0';
@@ -39,6 +39,8 @@ int UPSCheckPatch(FILE *filePointer, int verbose)
 /*
  * Reads a single Record from the patch file and returns it in a
  * UPS patchData struct.
+ * @param FILE *filePointer the pointer to the UPS patch file.
+ * @returns int 0 on a failed read.
  */
 int UPSReadRecord(FILE *filePointer)
 {
@@ -46,9 +48,9 @@ int UPSReadRecord(FILE *filePointer)
   char *inputChecksum = NULL,
        *outputChecksum = NULL,
        *patchChecksum = NULL;
-  if(fread(inputChecksum, BIT, 4, filePointer) &&
-     fread(outputChecksum, BIT, 4, filePointer) &&
-     fread(patchChecksum, BIT, 4, filePointer))
+  if(fread(inputChecksum, BYTE, 4, filePointer) &&
+     fread(outputChecksum, BYTE, 4, filePointer) &&
+     fread(patchChecksum, BYTE, 4, filePointer))
     {
       
     }
@@ -59,7 +61,63 @@ int UPSReadRecord(FILE *filePointer)
   return 0;
 }
 
+/*
+ * Reads a single variable-length encoded integer at the current point
+ * of the file pointer passed in, and sets the file to the end of the
+ * VLE.
+ * @param FILE *file the pointer to the file to read the VLE int from.
+ * @returns int the integer from the file.
+ */
+int readVLE(FILE* file)
+{
+  int shift = 1,
+      buffer = 0,
+      result = 0;
+  
+  while(1){
+    fread(&buffer, BYTE, 1, file);
+    result += (buffer & 0x7f) * shift;
+
+    // If the encoding's high bit is set, we are done here.
+    if(buffer & 0x80)
+      break;
+
+    // Add a new octet sans one bit (The "Should we continue?" bit.)
+    result += (shift <<= 7);
+  }
+  return result;
+} 
+
+/*
+ * Patches a UPS file according to the paramaters passed in the
+ * pStruct.
+ * @param pStruct *params A paramater structure complete with the
+ * input and output files, as well as any flags wanted during
+ * patching.
+ * @returns int 1 on a sucessful patch, 0 otherwise.
+ */
 int UPSPatchFile(struct pStruct *params)
 {
+  fseek(params->romFile, 0, SEEK_END);
+
+  int inputFileSize = readVLE(params->patchFile),
+      outputFileSize = readVLE(params->patchFile),
+      actualSize = ftell(params->romFile);
+  
+  rewind(params->romFile);
+  if(params->flags & ARG_VERBOSE)
+    printf("The UPS patch says:\n"
+	   "Input Filesize: %d bytes\nOutput Filesize: %d bytes\n"
+	   "...And the actual filesize is: %d bytes\n",
+	   inputFileSize, outputFileSize, actualSize);
+
+  if(inputFileSize != actualSize) //TODO: Force option.
+    return AIPSError(ERR_MEDIUM, "The file seems to be the wrong size, yo~!");
+
+  if(params->flags & ARG_VERBOSE)
+    printf("Good! They match. Time to get patching..!\n");
+
+  //TODO: The actual patch
+  
   return 0;
 }

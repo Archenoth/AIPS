@@ -16,8 +16,8 @@
 int IPSReadRecord(struct patchData *patch, FILE *filePointer)
 {
   unsigned char offset[3], size[2];
-  if(fread(&offset, BIT, 3, filePointer) &&
-     fread(&size, BIT, 2, filePointer))
+  if(fread(&offset, BYTE, 3, filePointer) &&
+     fread(&size, BYTE, 2, filePointer))
     {      
       // Fix linear reads
       patch->size = BYTE2_TO_UINT(size);
@@ -27,7 +27,7 @@ int IPSReadRecord(struct patchData *patch, FILE *filePointer)
 	return IPSReadRLE(patch, filePointer);
 
       patch->data = (char*)malloc(patch->size + 1);
-      return fread(patch->data, BIT, patch->size, filePointer);
+      return fread(patch->data, BYTE, patch->size, filePointer);
     }
   return 0;
 }
@@ -48,14 +48,14 @@ int IPSReadRecord(struct patchData *patch, FILE *filePointer)
 int IPSReadRLE(struct patchData *patch, FILE *filePointer)
 {
   char size[2];
-  if(fread(&size, BIT, 2, filePointer))
+  if(fread(&size, BYTE, 2, filePointer))
     {
       int count;
       char data = '\0';
 
       patch->size = BYTE2_TO_UINT(size);
 
-      if(!fread(&data, BIT, 1, filePointer))
+      if(!fread(&data, BYTE, 1, filePointer))
 	return 0;
 
       patch->data = (char*)malloc((patch->size * sizeof(char)) + 1);
@@ -78,7 +78,7 @@ int IPSReadRLE(struct patchData *patch, FILE *filePointer)
 int IPSCheckPatch(FILE *filePointer, int verbose)
 {
   char buffer[6];
-  if(fread(buffer, BIT, 5, filePointer) == 0)
+  if(fread(buffer, BYTE, 5, filePointer) == 0)
     return 0;
 
   buffer[5] = '\0';
