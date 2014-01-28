@@ -7,7 +7,7 @@
 int main(int argc, char *argv[])
 {
   struct pStruct params = {.romFile = NULL, .patchFile = NULL};
-
+  
   int i;
   for(i = 1; i < argc; i++)
     if(!parseArg(argv[i], &params))
@@ -56,15 +56,15 @@ int parseArg(char *argument, struct pStruct *params)
 	 strcmp(argument, "-v") == 0)
 	{
 	  if(params->flags & ARG_VERBOSE)
-	    params->flags = params->flags | ARG_VERYVERBOSE;
+	    params->flags |= ARG_VERYVERBOSE;
 	  else
-	    params->flags = params->flags | ARG_VERBOSE;
+	    params->flags |= ARG_VERBOSE;
 	}
       if(strcmp(argument, "-help") == 0 ||
 	 strcmp(argument, "-h") == 0 ||
 	 strcmp(argument, "--help") == 0 ||
 	 strcmp(argument, "-?") == 0)
-	params->flags = params->flags | ARG_HELP;
+	params->flags |= ARG_HELP;
     }
   else
     return fileArgument(argument, params);

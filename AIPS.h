@@ -22,6 +22,8 @@
 #define ERR_MEDIUM 1
 #define ERR_MAJOR 2
 
+// Data sizes
+#define BIT 1
 // Conversion macros courtesy of ZeroSoft on Zophar's domain
 // http://zerosoft.zophar.net/ips.php
 #define BYTE3_TO_UINT(bp) \

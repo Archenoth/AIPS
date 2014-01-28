@@ -21,7 +21,7 @@ int UPSCheckPatch(FILE *filePointer, int verbose)
     return 0;
 
   char buffer[5];
-  if(fread(buffer, 1, 4, filePointer) == 0)
+  if(fread(buffer, BIT, 4, filePointer) == 0)
     return 0;
 
   buffer[4] = '\0';
@@ -46,10 +46,12 @@ int UPSReadRecord(FILE *filePointer)
   char *inputChecksum = NULL,
        *outputChecksum = NULL,
        *patchChecksum = NULL;
-  if(fread(inputChecksum, 1, 4, filePointer) &&
-     fread(outputChecksum, 1, 4, filePointer) &&
-     fread(patchChecksum, 1, 4, filePointer))
-    {}
+  if(fread(inputChecksum, BIT, 4, filePointer) &&
+     fread(outputChecksum, BIT, 4, filePointer) &&
+     fread(patchChecksum, BIT, 4, filePointer))
+    {
+      
+    }
 
   /* unsigned int offset[7], bit[1]; */
   /* fread(&offset, 1, 7, filePointer); */
