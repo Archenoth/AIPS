@@ -2,6 +2,7 @@
 
 #include "AIPS.h"
 #include "UPS.h"
+#include "CRC.h"
 
 /*
  * Checks that a UPS file has the correct header
@@ -44,16 +45,6 @@ int UPSCheckPatch(FILE *filePointer, int verbose)
  */
 int UPSReadRecord(FILE *filePointer)
 {
-  fseek(filePointer, -12L, SEEK_END);
-  char *inputChecksum = NULL,
-       *outputChecksum = NULL,
-       *patchChecksum = NULL;
-  if(fread(inputChecksum, BYTE, 4, filePointer) &&
-     fread(outputChecksum, BYTE, 4, filePointer) &&
-     fread(patchChecksum, BYTE, 4, filePointer))
-    {
-      
-    }
 
   /* unsigned int offset[7], bit[1]; */
   /* fread(&offset, 1, 7, filePointer); */
@@ -115,8 +106,45 @@ int UPSPatchFile(struct pStruct *params)
     return AIPSError(ERR_MEDIUM, "The file seems to be the wrong size, yo~!");
 
   if(params->flags & ARG_VERBOSE)
-    printf("Good! They match. Time to get patching..!\n");
+    printf("Good! They match. Now for the CRC checks..!\n");
 
+
+  long position = ftell(params->patchFile);
+
+  fseek(params->patchFile, -12L, SEEK_END);
+  unsigned int inputChecksum,
+               outputChecksum,
+               patchChecksum;
+  if(fread(&inputChecksum, BYTE, 4, params->patchFile) &&
+     fread(&outputChecksum, BYTE, 4, params->patchFile) &&
+     fread(&patchChecksum, BYTE, 4, params->patchFile))
+    {
+      fseek(params->patchFile, -4L, SEEK_END);
+      unsigned int table[256];
+      
+      //UPS uses 0xedb88320 as the polynomial value for CRC.
+      crcTable(&table[0], 0xedb88320);
+
+      unsigned int patchFileCRC = crcFile(params->patchFile, &table[0]),
+	           romFileCRC = crcFile(params->romFile, &table[0]);
+
+      if(params->flags & ARG_VERBOSE)
+	printf("Patch file read CRC: %#10x, actual: %#10x\n"
+	       "ROM file read CRC: %#10x, actual: %#10x\n",
+	       patchChecksum, patchFileCRC,
+	       inputChecksum, romFileCRC);
+
+      if(patchChecksum != patchFileCRC)
+	return AIPSError(ERR_MEDIUM,
+			 "Oh no! This patch file looks invalid!");
+      
+      if(inputChecksum != romFileCRC)
+	return AIPSError(ERR_MEDIUM,
+			 "You may have an invalid file."
+			 " (Or this patch isn't for this file.)");
+    }
+  
+  fseek(params->patchFile, position, SEEK_SET);
   //TODO: The actual patch
   
   return 0;

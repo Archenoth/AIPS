@@ -123,8 +123,8 @@ int fileArgument(char *argument, struct pStruct *params)
 FILE* openIfPatch(char *filename, struct pStruct *params)
 {
   FILE *file;
-  if(!(file = useFile(filename, params, "r")))
-     return useFile(filename, params, "w+");
+  if(!(file = useFile(filename, params, "rb")))
+     return useFile(filename, params, "wb+");
 
   // Least amount of work... Just check the filename to determine type
   // of check.

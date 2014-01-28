@@ -1,4 +1,4 @@
-SRC=AIPS.c IPS.c UPS.c
+SRC=AIPS.c CRC.c IPS.c UPS.c
 OBJ=$(SRC:.c=.o)
 OBJ32=$(SRC:.c=.o32)
 WINOBJ=$(SRC:.c=.owin)
