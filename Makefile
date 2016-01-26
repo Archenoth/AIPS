@@ -8,7 +8,7 @@ OUT=AIPS
 WIN=i586-mingw32msvc-gcc
 WIN64=i686-w64-mingw32-gcc
 
-CFLAGS=-Wall -O3 -g
+CFLAGS=-Wall -Wextra -pedantic -O3 -g
 LDFLAGS=
 WINCFLAGS=$(CFLAGS)
 WINLDFLAGS=$(LDFLAGS)
@@ -72,5 +72,5 @@ help:
 	@echo veryclean		Removes object files and binaries
 
 check-syntax:
-	$(CC) $(SRC) -o null -Wall
+	$(CC) $(SRC) -o null $(CFLAGS)
 	-$(RM) null
