@@ -50,7 +50,7 @@ int IPSReadRLE(struct patchData *patch, FILE *filePointer) {
   char size[2];
 
   if(fread(&size, BYTE, 2, filePointer)) {
-      uint count;
+      unsigned int count;
       char data = '\0';
 
       patch->size = BYTE2_TO_UINT(size);
