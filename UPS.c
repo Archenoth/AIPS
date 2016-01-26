@@ -1,4 +1,4 @@
-// UPS file-specific functions
+/* UPS file-specific functions */
 
 #include "AIPS.h"
 #include "UPS.h"
@@ -12,28 +12,31 @@
  * @param FILE *filePointer the pointer to the UPS patch file.
  * @returns int 1 on a valid UPS1 header, 0 otherwise.
  */
-int UPSCheckPatch(FILE *filePointer, int verbose)
-{
+int UPSCheckPatch(FILE *filePointer, int verbose) {
+  long fileSize;
+  char buffer[5];
+
   fseek(filePointer, 0L, SEEK_END);
-  long fileSize = ftell(filePointer);
+  fileSize = ftell(filePointer);
   rewind(filePointer);
 
-  if(fileSize < 20) // Not long enough to be a UPS patch file
+  if(fileSize < 20) { /* Not long enough to be a UPS patch file */
     return 0;
+  }
 
-  char buffer[5];
   if(fread(buffer, BYTE, 4, filePointer) == 0)
     return 0;
 
   buffer[4] = '\0';
 
-  // Valid patch header?
-  if(strcmp(buffer, "UPS1") == 0)
-    {
-      if(verbose)
-	printf("This appears to be a valid UPS patch...\n");
-      return 1;
+  /* Valid patch header? */
+  if(strcmp(buffer, "UPS1") == 0) {
+    if(verbose) {
+      printf("This appears to be a valid UPS patch...\n");
     }
+    return 1;
+  }
+
   return 0;
 }
 
@@ -43,9 +46,9 @@ int UPSCheckPatch(FILE *filePointer, int verbose)
  * @param FILE *filePointer the pointer to the UPS patch file.
  * @returns int 0 on a failed read.
  */
-int UPSReadRecord(FILE *filePointer)
-{
-
+int UPSReadRecord(FILE *file) {
+  int pointer = readVLE(file);
+  printf("Pointer is: %d\n", pointer);
   /* unsigned int offset[7], bit[1]; */
   /* fread(&offset, 1, 7, filePointer); */
   /* fread(&bit, 1, 1, filePointer); */
@@ -59,25 +62,76 @@ int UPSReadRecord(FILE *filePointer)
  * @param FILE *file the pointer to the file to read the VLE int from.
  * @returns int the integer from the file.
  */
-int readVLE(FILE* file)
-{
+int readVLE(FILE* file) {
   int shift = 1,
       buffer = 0,
       result = 0;
-  
+
   while(1){
-    fread(&buffer, BYTE, 1, file);
+    if(!fread(&buffer, BYTE, 1, file)){
+      return 0;
+    }
+
     result += (buffer & 0x7f) * shift;
 
-    // If the encoding's high bit is set, we are done here.
+    /* If the encoding's high bit is set, we are done here. */
     if(buffer & 0x80)
       break;
 
-    // Add a new octet sans one bit (The "Should we continue?" bit.)
+    /* Add a new octet sans one bit (The "Should we continue?" bit.) */
     result += (shift <<= 7);
   }
   return result;
-} 
+}
+
+/*
+ * Verifies the CRCs of the UPS file.
+ */
+int UPSVerifyCRC(struct pStruct *params)
+{
+  long position = ftell(params->patchFile);
+  unsigned int inputChecksum,
+               outputChecksum,
+               patchChecksum;
+
+  fseek(params->patchFile, -12L, SEEK_END);
+  if(fread(&inputChecksum, BYTE, 4, params->patchFile) &&
+     fread(&outputChecksum, BYTE, 4, params->patchFile) &&
+     fread(&patchChecksum, BYTE, 4, params->patchFile))
+    {
+      unsigned int table[256];
+      unsigned int patchFileCRC, romFileCRC;
+
+      fseek(params->patchFile, -4L, SEEK_END);
+
+      /* UPS uses 0xedb88320 as the polynomial value for CRC. */
+      crcTable(&table[0], 0xedb88320);
+
+      patchFileCRC = crcFile(params->patchFile, &table[0]);
+      romFileCRC = crcFile(params->romFile, &table[0]);
+
+      if(params->flags & ARG_VERBOSE) {
+        printf("Patch file read CRC: %#10x, actual: %#10x\n"
+               "ROM file read CRC: %#10x, actual: %#10x\n",
+               patchChecksum, patchFileCRC,
+               inputChecksum, romFileCRC);
+      }
+
+      if(patchChecksum != patchFileCRC) {
+        return AIPSError(ERR_MEDIUM, "Oh no! This patch file looks invalid!");
+      }
+
+      if(inputChecksum != romFileCRC) {
+        return AIPSError(ERR_MEDIUM,
+                         "You may have an invalid file."
+                         " (Or this patch isn't for this file.)");
+      }
+    }
+
+  fseek(params->patchFile, position, SEEK_SET);
+
+  return 1;
+}
 
 /*
  * Patches a UPS file according to the paramaters passed in the
@@ -87,65 +141,36 @@ int readVLE(FILE* file)
  * patching.
  * @returns int 1 on a sucessful patch, 0 otherwise.
  */
-int UPSPatchFile(struct pStruct *params)
-{
+int UPSPatchFile(struct pStruct *params) {
+
+  int inputFileSize, outputFileSize, actualSize;
   fseek(params->romFile, 0, SEEK_END);
 
-  int inputFileSize = readVLE(params->patchFile),
-      outputFileSize = readVLE(params->patchFile),
-      actualSize = ftell(params->romFile);
-  
+  inputFileSize = readVLE(params->patchFile);
+  outputFileSize = readVLE(params->patchFile);
+  actualSize = ftell(params->romFile);
+
   rewind(params->romFile);
-  if(params->flags & ARG_VERBOSE)
+  if(params->flags & ARG_VERBOSE){
     printf("The UPS patch says:\n"
-	   "Input Filesize: %d bytes\nOutput Filesize: %d bytes\n"
-	   "...And the actual filesize is: %d bytes\n",
-	   inputFileSize, outputFileSize, actualSize);
+           "Input Filesize: %d bytes\nOutput Filesize: %d bytes\n"
+           "...And the actual filesize is: %d bytes\n",
+           inputFileSize, outputFileSize, actualSize);
+  }
 
-  if(inputFileSize != actualSize) //TODO: Force option.
+  if(inputFileSize != actualSize) { /*TODO: Force option. */
     return AIPSError(ERR_MEDIUM, "The file seems to be the wrong size, yo~!");
+  }
 
-  if(params->flags & ARG_VERBOSE)
+  if(params->flags & ARG_VERBOSE) {
     printf("Good! They match. Now for the CRC checks..!\n");
+  }
 
+  if(UPSVerifyCRC(params)) {
+    printf("Yay!");
+  }
 
-  long position = ftell(params->patchFile);
+  /* TODO: The actual patch */
 
-  fseek(params->patchFile, -12L, SEEK_END);
-  unsigned int inputChecksum,
-               outputChecksum,
-               patchChecksum;
-  if(fread(&inputChecksum, BYTE, 4, params->patchFile) &&
-     fread(&outputChecksum, BYTE, 4, params->patchFile) &&
-     fread(&patchChecksum, BYTE, 4, params->patchFile))
-    {
-      fseek(params->patchFile, -4L, SEEK_END);
-      unsigned int table[256];
-      
-      //UPS uses 0xedb88320 as the polynomial value for CRC.
-      crcTable(&table[0], 0xedb88320);
-
-      unsigned int patchFileCRC = crcFile(params->patchFile, &table[0]),
-	           romFileCRC = crcFile(params->romFile, &table[0]);
-
-      if(params->flags & ARG_VERBOSE)
-	printf("Patch file read CRC: %#10x, actual: %#10x\n"
-	       "ROM file read CRC: %#10x, actual: %#10x\n",
-	       patchChecksum, patchFileCRC,
-	       inputChecksum, romFileCRC);
-
-      if(patchChecksum != patchFileCRC)
-	return AIPSError(ERR_MEDIUM,
-			 "Oh no! This patch file looks invalid!");
-      
-      if(inputChecksum != romFileCRC)
-	return AIPSError(ERR_MEDIUM,
-			 "You may have an invalid file."
-			 " (Or this patch isn't for this file.)");
-    }
-  
-  fseek(params->patchFile, position, SEEK_SET);
-  //TODO: The actual patch
-  
-  return 0;
+  return UPSReadRecord(params->patchFile);
 }

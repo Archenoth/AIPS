@@ -1,4 +1,4 @@
-// IPS specific functions
+/* IPS specific functions */
 
 #include "AIPS.h"
 #include "IPS.h"
@@ -13,28 +13,29 @@
  * information will be written to.
  * @param FILE *filePointer a pointer to the patch file being read.
  */
-int IPSReadRecord(struct patchData *patch, FILE *filePointer)
-{
+int IPSReadRecord(struct patchData *patch, FILE *filePointer) {
   unsigned char offset[3], size[2];
+
   if(fread(&offset, BYTE, 3, filePointer) &&
-     fread(&size, BYTE, 2, filePointer))
-    {      
-      // Fix linear reads
+     fread(&size, BYTE, 2, filePointer)) {
+      /* Fix linear reads */
       patch->size = BYTE2_TO_UINT(size);
       patch->offset = BYTE3_TO_UINT(offset);
 
-      if(patch->size == 0)
-	return IPSReadRLE(patch, filePointer);
+      if(patch->size == 0) {
+        return IPSReadRLE(patch, filePointer);
+      }
 
       patch->data = (char*)malloc(patch->size + 1);
       return fread(patch->data, BYTE, patch->size, filePointer);
     }
+
   return 0;
 }
 
 /*
  * Read an RLE-Encoded patch...
- * 
+ *
  * RLE patches are simple patches with a single byte repeating a
  * specified quantity of times. The first 16 bits are the size of the
  * patch, or the number of times to repeat the insert, and the value
@@ -45,22 +46,24 @@ int IPSReadRecord(struct patchData *patch, FILE *filePointer)
  * the patch file.
  * @return Returns 1 on success, 0 on failure.
  */
-int IPSReadRLE(struct patchData *patch, FILE *filePointer)
-{
+int IPSReadRLE(struct patchData *patch, FILE *filePointer) {
   char size[2];
-  if(fread(&size, BYTE, 2, filePointer))
-    {
-      int count;
+
+  if(fread(&size, BYTE, 2, filePointer)) {
+      uint count;
       char data = '\0';
 
       patch->size = BYTE2_TO_UINT(size);
 
-      if(!fread(&data, BYTE, 1, filePointer))
-	return 0;
+      if(!fread(&data, BYTE, 1, filePointer)){
+        return 0;
+      }
 
       patch->data = (char*)malloc((patch->size * sizeof(char)) + 1);
-      for(count = 0; count < patch->size; count++)
-	patch->data[count] = (char)data;
+      for(count = 0; count < patch->size; count++) {
+        patch->data[count] = (char)data;
+      }
+
       return 1;
     }
   return 0;
@@ -75,21 +78,22 @@ int IPSReadRLE(struct patchData *patch, FILE *filePointer)
  * @param FILE *filePointer the pointer to the IPS patch file.
  * @returns int 1 on a valid PATCH header, 0 otherwise.
  */
-int IPSCheckPatch(FILE *filePointer, int verbose)
-{
+int IPSCheckPatch(FILE *filePointer, int verbose) {
   char buffer[6];
-  if(fread(buffer, BYTE, 5, filePointer) == 0)
+  if(fread(buffer, BYTE, 5, filePointer) == 0) {
     return 0;
+  }
 
   buffer[5] = '\0';
 
-  // Valid patch header?
-  if(strcmp(buffer, "PATCH") == 0)
-    {
-      if(verbose)
-	printf("This appears to be a valid IPS patch file...\n");
-      return 1;
+  /* Valid patch header? */
+  if(strcmp(buffer, "PATCH") == 0) {
+    if(verbose) {
+      printf("This appears to be a valid IPS patch file...\n");
     }
+    return 1;
+  }
+
   return 0;
 }
 
@@ -103,21 +107,23 @@ int IPSCheckPatch(FILE *filePointer, int verbose)
  * contains the files and parameters in which to patch the file.
  * @return Returns 1 on success or 0 on failure.
  */
-int IPSPatchFile(struct pStruct *params)
-{
-  struct patchData patch = {};
-  while(IPSReadRecord(&patch, params->patchFile))
-    {
-      if((params->flags & ARG_VERYVERBOSE))
-	printf("Applied patch. Offset: Byte %d size: %d bytes\n",
-	       (unsigned int)patch.offset,
-	       (unsigned int)patch.size);
+int IPSPatchFile(struct pStruct *params) {
+  struct patchData patch = {0, 0, NULL};
 
-      fseek(params->romFile, patch.offset, SEEK_SET);
-      fwrite(patch.data, patch.size, 1, params->romFile);
-      free(patch.data);
+  while(IPSReadRecord(&patch, params->patchFile)) {
+    if((params->flags & ARG_VERYVERBOSE)) {
+      printf("Applied patch. Offset: Byte %d size: %d bytes\n",
+             (unsigned int)patch.offset,
+             (unsigned int)patch.size);
     }
+
+    fseek(params->romFile, patch.offset, SEEK_SET);
+    fwrite(patch.data, patch.size, 1, params->romFile);
+    free(patch.data);
+  }
+
   fclose(params->romFile);
+
   return 0;
 }
 
@@ -126,18 +132,16 @@ int IPSPatchFile(struct pStruct *params)
  *
  * This function creates an IPS patch file
  */
-int IPSCreatePatch(struct pStruct *params)
-{
+int IPSCreatePatch(struct pStruct *params) {
   rewind(params->patchFile);
   fwrite("PATCH", 1, sizeof("PATCH"), params->patchFile);
-  
+
   fwrite("EOF", 1, sizeof("EOF"), params->patchFile);
   return 0;
 }
 
 
-int IPSWriteRecord(struct patchData *patch, FILE *filePointer)
-{
+int IPSWriteRecord(struct patchData *patch, FILE *filePointer) {
   fwrite(&patch->offset, 3, 1, filePointer);
   fwrite(&patch->size, 2, 1, filePointer);
   fwrite(&patch->data, sizeof(patch->data), 1, filePointer);
@@ -145,10 +149,9 @@ int IPSWriteRecord(struct patchData *patch, FILE *filePointer)
 }
 
 
-int IPSWriteRLE(struct patchData *patch, FILE *filePointer)
-{
+int IPSWriteRLE(struct patchData *patch, FILE *filePointer) {
   ASSERT(&patch->offset == 0, "RLE writing occurring without offset of 0.");
-  fwrite(&patch->offset, 2, 1, filePointer); //Offset should be 0
+  fwrite(&patch->offset, 2, 1, filePointer); /* Offset should be 0 */
   fwrite(&patch->size, 2, 1, filePointer);
   fwrite(&patch->data, 1, 1, filePointer);
   return 0;

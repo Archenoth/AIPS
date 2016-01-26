@@ -1,5 +1,4 @@
-struct patchData
-{
+struct patchData {
   unsigned int offset;
   unsigned int size;
   char *data;
