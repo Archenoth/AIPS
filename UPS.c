@@ -4,12 +4,14 @@
 #include "UPS.h"
 #include "CRC.h"
 
-/*
+/**
  * Checks that a UPS file has the correct header
  *
  * Checks that the next 4 bytes (In an UPS file, the first 4 bytes are
  * where the header is present) say "UPS1".
+ *
  * @param FILE *filePointer the pointer to the UPS patch file.
+ *
  * @returns int 1 on a valid UPS1 header, 0 otherwise.
  */
 int UPSCheckPatch(FILE *filePointer, int verbose) {
@@ -40,10 +42,12 @@ int UPSCheckPatch(FILE *filePointer, int verbose) {
   return 0;
 }
 
-/*
+/**
  * Reads a single Record from the patch file and returns it in a
  * UPS patchData struct.
+ *
  * @param FILE *filePointer the pointer to the UPS patch file.
+ *
  * @returns int 0 on a failed read.
  */
 int UPSReadRecord(FILE *file) {
@@ -55,11 +59,13 @@ int UPSReadRecord(FILE *file) {
   return 0;
 }
 
-/*
+/**
  * Reads a single variable-length encoded integer at the current point
  * of the file pointer passed in, and sets the file to the end of the
  * VLE.
+ *
  * @param FILE *file the pointer to the file to read the VLE int from.
+ *
  * @returns int the integer from the file.
  */
 int readVLE(FILE* file) {
@@ -84,7 +90,7 @@ int readVLE(FILE* file) {
   return result;
 }
 
-/*
+/**
  * Verifies the CRCs of the UPS file.
  */
 int UPSVerifyCRC(struct pStruct *params)
@@ -133,12 +139,14 @@ int UPSVerifyCRC(struct pStruct *params)
   return 1;
 }
 
-/*
+/**
  * Patches a UPS file according to the paramaters passed in the
  * pStruct.
+ *
  * @param pStruct *params A paramater structure complete with the
  * input and output files, as well as any flags wanted during
  * patching.
+ *
  * @returns int 1 on a sucessful patch, 0 otherwise.
  */
 int UPSPatchFile(struct pStruct *params) {

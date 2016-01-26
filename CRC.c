@@ -49,7 +49,7 @@ unsigned int crcFile(FILE *file, unsigned int *crcTable){
   }
 
   rewind(file);
-  
+
   while(fread(&buffer, BYTE, 1, file) && lastPosition > i++)
     crc = (crc >> 8) ^ crcTable[buffer ^ ((crc) & 0x000000FF)];
 

@@ -3,15 +3,18 @@
 #include "AIPS.h"
 #include "IPS.h"
 
-/*
+/**
  * Reads a record from the patch file.
  *
  * This code both detects, and reads the next record in the
  * filePointer at the given location and writes the results into the
  * patchData struct supplied.
+ *
  * @param struct *patchData A pointer to a patchData struct that the
  * information will be written to.
  * @param FILE *filePointer a pointer to the patch file being read.
+ *
+ * @return int: 1 if successful, false otherwise.
  */
 int IPSReadRecord(struct patchData *patch, FILE *filePointer) {
   unsigned char offset[3], size[2];
@@ -33,17 +36,19 @@ int IPSReadRecord(struct patchData *patch, FILE *filePointer) {
   return 0;
 }
 
-/*
+/**
  * Read an RLE-Encoded patch...
  *
  * RLE patches are simple patches with a single byte repeating a
  * specified quantity of times. The first 16 bits are the size of the
  * patch, or the number of times to repeat the insert, and the value
  * immediately succeeding this number is the patch character itself...
+ *
  * @param struct patchData *patch A patch struct pointer holding the
  * offset, the size, and the data...
  * @param FILE *filePointer a file pointer to the current location in
  * the patch file.
+ *
  * @return Returns 1 on success, 0 on failure.
  */
 int IPSReadRLE(struct patchData *patch, FILE *filePointer) {
@@ -70,12 +75,14 @@ int IPSReadRLE(struct patchData *patch, FILE *filePointer) {
 }
 
 
-/*
+/**
  * Checks that an IPS file has the correct header
  *
  * Checks that the next 5 bytes (In an IPS file, the first 5 bytes are
  * where the header is present) say "PATCH".
+ *
  * @param FILE *filePointer the pointer to the IPS patch file.
+ *
  * @returns int 1 on a valid PATCH header, 0 otherwise.
  */
 int IPSCheckPatch(FILE *filePointer, int verbose) {
@@ -97,14 +104,16 @@ int IPSCheckPatch(FILE *filePointer, int verbose) {
   return 0;
 }
 
-/*
+/**
  * Patches a file using an IPS file
  *
  * This function will attempt to patch a file specified in it's
  * parameters with the patch file also specified in it's parameters
  * according to the flags set.
+ *
  * @param struct pStruct *params A pointer to a parameter struct that
  * contains the files and parameters in which to patch the file.
+ *
  * @return Returns 1 on success or 0 on failure.
  */
 int IPSPatchFile(struct pStruct *params) {
