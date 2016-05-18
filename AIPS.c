@@ -37,7 +37,9 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "File to patch and patch file are both required.\n"
             "Try %s -h\n", argv[0]);
   } else {
-    return params.patchFunction(&params);
+    int result = params.patchFunction(&params);
+    fclose(params.patchFile);
+    return result;
   }
 
   return 1;
