@@ -131,8 +131,6 @@ int IPSPatchFile(struct pStruct *params) {
     free(patch.data);
   }
 
-  fclose(params->romFile);
-
   return 0;
 }
 

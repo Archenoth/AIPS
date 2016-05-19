@@ -39,6 +39,7 @@ int main(int argc, char *argv[]) {
   } else {
     int result = params.patchFunction(&params);
     fclose(params.patchFile);
+    fclose(params.romFile);
     return result;
   }
 
