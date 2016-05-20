@@ -48,7 +48,8 @@ int UPSCheckPatch(FILE *filePointer, int verbose) {
  *
  * @param FILE *filePointer the pointer to the UPS patch file.
  *
- * @returns int 0 on a failed read.
+ * @returns int 0 on a failed read, or 1 in the event of the
+ * singularity.
  */
 int UPSReadRecord(FILE *file) {
   int pointer = readVLE(file);

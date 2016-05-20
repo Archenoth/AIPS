@@ -14,7 +14,7 @@
  * information will be written to.
  * @param FILE *filePointer a pointer to the patch file being read.
  *
- * @return int: 1 if successful, false otherwise.
+ * @return int: 1 if successful, 0 otherwise.
  */
 int IPSReadRecord(struct patchData *patch, FILE *filePointer) {
   unsigned char offset[3], size[2];
@@ -71,6 +71,7 @@ int IPSReadRLE(struct patchData *patch, FILE *filePointer) {
 
       return 1;
     }
+
   return 0;
 }
 
@@ -134,7 +135,7 @@ int IPSPatchFile(struct pStruct *params) {
   return 0;
 }
 
-/*
+/**
  * Creates a patch file with the passed in pStruct
  *
  * This function creates an IPS patch file

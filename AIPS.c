@@ -50,15 +50,15 @@ int main(int argc, char *argv[]) {
  * Command line argument parsing function.
  *
  * This function parses arguments passed to AIPS from the command line
- * and sets verious flags according to their values.
+ * and sets various flags according to their values.
  *
  * @param char *argument the argument string. (Taken directly from the
  * command line)
  * @param struct pStruct *params The parameter struct which holds
- * filen streams as well as all of the flags set combined with bitwise
+ * file streams as well as all of the flags set--combined with bitwise
  * math.
  *
- * @return 1 on success.
+ * @return 1 on success, 0 on errors.
  */
 int parseArg(char *argument, pStruct *params){
   if(argument[0] == '-') {
@@ -91,7 +91,7 @@ int parseArg(char *argument, pStruct *params){
  * files associated with them. It also has the first level of error
  * handling for files.
  *
- * @param char *argument A pointer to an filename string to attempt to
+ * @param char *argument A pointer to a filename string to attempt to
  * open.
  * @param struct pStruct *params A pointer to a parameter struct
  * containing files, and flags for execution.
@@ -120,8 +120,8 @@ int fileArgument(char *argument, pStruct *params) {
 /**
  * Using the enabled functions, this function will probe the passed-in
  * file handle, and see if it can figure out what kind of patch it's
- * looking at, and set the correct function in the passed in pStruct
- * accordingly.
+ * looking at, and set the correct function to patch it in the passed
+ * in pStruct.
  *
  * @param FILE* file: A pointer to the file you wish to probe.
  * @param pStruct* params: A pointer to the pStruct you wish to set
@@ -163,21 +163,24 @@ FILE* headerProbe(FILE* file, pStruct *params){
 /**
  * Determines if the file passed in is a patch or not.
  *
- * This function will take a char[] string filename, open it, then try
- * its best to figure out what kind of file it is. It will print its
- * findings out to the console
+ * This function will take a pointer to a string filename, open it,
+ * then try its best to figure out what kind of file it is. It will
+ * print its findings out to the console if the pStruct verbose flag
+ * is set.
  *
  * If the file passed in doesn't exist, it is created and returned as
  * a pointer to the writable FILE for use with fwrite and other
- * writing stream functions.
+ * writing stream functions. (For creating patches, or target files)
  *
  * @param char* argument: The filename passed into the function.
- * @param int verbose: Will determine if the function prints out
- * information to the console about its findings. It will print them
- * if true, or else it will be silent.
+ * @param pStruct: The parameter structure to set the function
+ * pointers this function deems will open the file, and with a verbose
+ * flag set prints out information to the console about its
+ * findings.
  *
- * @return int: Returns the FILE if the passed in argument is a path
- * to a valid patch file, and NULL otherwise.
+ * @return int: Returns the FILE pointer if the passed in argument is
+ * a path to a valid patch file, (Or to a new file where a patch will
+ * be written) and NULL otherwise.
  */
 FILE* openIfPatch(char *filename, pStruct *params) {
   FILE *file;
@@ -220,7 +223,7 @@ FILE* openIfPatch(char *filename, pStruct *params) {
  * Opens a file with a debug and error handling wrapper.
  *
  * This function is a very loose abstraction of the fopen function
- * that will accept a path to a file, and a pStruct that contains the
+ * that will accept a path to a file, a pStruct that contains the
  * argument flags that you had set before calling this function, a
  * file pointer that you wish to store the stream, and finally the
  * mode that you wish to use to open the file with.
@@ -262,15 +265,15 @@ FILE *useFile(char *argument, pStruct *params, char *mode) {
  *
  * @param int level The level of the error passed ERR_MINOR is more
  * like a warning, and returns a 1, allowing operations to
- * continue. ERR_MEDIUM is a standard error that will returna 0 status
- * so correct handling can take place, and ERR_MAJOR halts the
- * program.
+ * continue. ERR_MEDIUM is a standard error that will return a 0
+ * status so correct handling can take place, and ERR_MAJOR halts the
+ * program then and there.
  * @param char *message A message that you wish to print to the
  * screen, accepts printf-style escapes and variables.
  * @param ... The remainder of the arguments that will be put into the
- * string in lieu of printf.
+ * string as if they were printf arguments.
  *
- * @return int: Returns the error status that can likely kjust be
+ * @return int: Returns the error status that can likely just be
  * returned from the function that called this function.
  */
 int AIPSError(int level, const char *message, ...){
